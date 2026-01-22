@@ -3,36 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ICE Activity Monitor - Live Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Anybody:wght@300;600;800&display=swap" rel="stylesheet">
+    <title>ICE Activity Monitor - Complete Dataset Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         :root {
-            --warning-red: #DC2626;
-            --alert-orange: #F97316;
-            --safe-green: #10B981;
-            --bg-dark: #0A0A0A;
-            --bg-card: #1A1A1A;
-            --text-primary: #FAFAFA;
-            --text-secondary: #A3A3A3;
-            --border-color: #2A2A2A;
+            /* Ice-themed palette - cool, alert, but less harsh */
+            --ice-blue: #5B9BD5;
+            --frost-white: #E8F4F8;
+            --steel-gray: #4A5568;
+            --midnight-blue: #2C3E50;
+            --alert-coral: #FF6B6B;
+            --warning-amber: #FFA726;
+            --safe-teal: #26A69A;
+            --slate: #34495E;
+            
+            /* Functional color mapping */
+            --warning-red: #FF6B6B;
+            --alert-orange: #FFA726;
+            --safe-green: #26A69A;
+            --bg-dark: #1E2936;
+            --bg-card: #2C3E50;
+            --text-primary: #E8F4F8;
+            --text-secondary: #94A3B8;
+            --border-color: rgba(91, 155, 213, 0.2);
+            --accent-primary: #5B9BD5;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Space Mono', monospace;
+            font-family: 'Poppins', sans-serif;
             background: var(--bg-dark);
             color: var(--text-primary);
             min-height: 100vh;
             padding: 2rem;
         }
 
+        .alert-banner {
+            background: linear-gradient(135deg, rgba(91, 155, 213, 0.15), rgba(44, 62, 80, 0.15));
+            border: 2px solid var(--accent-primary);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .alert-banner .icon { font-size: 1.5rem; }
+        .alert-banner .text { flex: 1; font-size: 0.9rem; line-height: 1.5; }
+        .alert-banner .text strong { color: var(--accent-primary); }
+        .alert-banner a { color: var(--accent-primary); text-decoration: underline; font-weight: 600; }
+
         .disclaimer {
-            background: linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(249, 115, 22, 0.1));
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 167, 38, 0.08));
             border: 2px solid var(--warning-red);
             border-radius: 8px;
             padding: 1.5rem;
@@ -42,22 +67,16 @@
         }
 
         .disclaimer h3 {
-            font-family: 'Anybody', sans-serif;
-            font-weight: 800;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
             color: var(--warning-red);
             margin-bottom: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
         }
 
-        .disclaimer p {
-            margin-bottom: 0.5rem;
-            color: var(--text-secondary);
-        }
-
-        .disclaimer strong {
-            color: var(--text-primary);
-        }
+        .disclaimer p { margin-bottom: 0.5rem; color: var(--text-secondary); }
+        .disclaimer strong { color: var(--text-primary); }
 
         header {
             margin-bottom: 3rem;
@@ -66,17 +85,19 @@
         }
 
         h1 {
-            font-family: 'Anybody', sans-serif;
-            font-weight: 800;
-            font-size: 3rem;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 3.5rem;
             margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--warning-red), var(--alert-orange));
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, var(--ice-blue), var(--midnight-blue));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
         .subtitle {
+            font-family: 'Poppins', sans-serif;
             font-size: 1rem;
             color: var(--text-secondary);
             font-weight: 300;
@@ -86,17 +107,19 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            background: rgba(220, 38, 38, 0.2);
+            background: rgba(91, 155, 213, 0.15);
+            border: 1px solid var(--accent-primary);
             padding: 0.5rem 1rem;
             border-radius: 20px;
             margin-top: 1rem;
             font-size: 0.85rem;
+            font-weight: 600;
         }
 
         .pulse-dot {
             width: 8px;
             height: 8px;
-            background: var(--warning-red);
+            background: var(--accent-primary);
             border-radius: 50%;
             animation: pulse 2s infinite;
         }
@@ -108,7 +131,7 @@
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
@@ -118,148 +141,55 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 1.5rem;
-            transition: transform 0.2s, border-color 0.2s;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
         }
 
         .stat-card:hover {
             transform: translateY(-2px);
-            border-color: var(--warning-red);
+            border-color: var(--accent-primary);
+            box-shadow: 0 4px 12px rgba(91, 155, 213, 0.3);
         }
 
         .stat-label {
+            font-family: 'Poppins', sans-serif;
             font-size: 0.75rem;
             color: var(--text-secondary);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             margin-bottom: 0.5rem;
+            font-weight: 600;
         }
 
         .stat-value {
-            font-family: 'Anybody', sans-serif;
+            font-family: 'Rajdhani', sans-serif;
             font-weight: 700;
             font-size: 2.5rem;
             color: var(--text-primary);
         }
 
-        .activity-table {
+        .insight-section {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            overflow: hidden;
+            padding: 2rem;
+            margin-bottom: 2rem;
         }
 
-        .table-header {
-            background: rgba(220, 38, 38, 0.1);
-            padding: 1rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .table-title {
-            font-family: 'Anybody', sans-serif;
+        .section-title {
+            font-family: 'Rajdhani', sans-serif;
             font-weight: 700;
-            font-size: 1.25rem;
-        }
-
-        .refresh-btn {
-            background: var(--warning-red);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-family: 'Space Mono', monospace;
-            font-size: 0.85rem;
-            transition: background 0.2s;
-        }
-
-        .refresh-btn:hover {
-            background: #B91C1C;
-        }
-
-        .activity-list {
-            max-height: 600px;
-            overflow-y: auto;
-        }
-
-        .activity-item {
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            gap: 1rem;
-            align-items: start;
-            transition: background 0.2s;
-        }
-
-        .activity-item:hover {
-            background: rgba(220, 38, 38, 0.05);
-        }
-
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-
-        .activity-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-
-        .badge-abduction {
-            background: rgba(220, 38, 38, 0.2);
-            color: var(--warning-red);
-        }
-
-        .badge-threat {
-            background: rgba(249, 115, 22, 0.2);
-            color: var(--alert-orange);
-        }
-
-        .badge-observed {
-            background: rgba(163, 163, 163, 0.2);
-            color: var(--text-secondary);
-        }
-
-        .activity-details h4 {
-            font-size: 0.95rem;
-            margin-bottom: 0.25rem;
-            color: var(--text-primary);
-        }
-
-        .activity-meta {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
+            font-size: 1.8rem;
             margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            letter-spacing: 1px;
         }
 
-        .activity-description {
-            font-size: 0.85rem;
+        .section-subtitle {
+            font-family: 'Poppins', sans-serif;
             color: var(--text-secondary);
-            line-height: 1.5;
-        }
-
-        .verification-badge {
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 700;
-        }
-
-        .verified {
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--safe-green);
-        }
-
-        .likely {
-            background: rgba(249, 115, 22, 0.2);
-            color: var(--alert-orange);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            font-weight: 300;
         }
 
         .loading {
@@ -268,8 +198,14 @@
             color: var(--text-secondary);
         }
 
+        .loading-progress {
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            color: var(--accent-primary);
+        }
+
         .error {
-            background: rgba(220, 38, 38, 0.1);
+            background: rgba(255, 107, 107, 0.1);
             border: 2px solid var(--warning-red);
             border-radius: 8px;
             padding: 2rem;
@@ -277,26 +213,84 @@
             color: var(--warning-red);
         }
 
+        .refresh-btn {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-bottom: 2rem;
+            letter-spacing: 0.5px;
+        }
+
+        .refresh-btn:hover {
+            background: #4A8BC2;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(91, 155, 213, 0.4);
+        }
+
+        .refresh-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .pattern-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .pattern-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+
+        .pattern-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            letter-spacing: 0.5px;
+        }
+
+        .pattern-description {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            font-weight: 300;
+        }
+
+        .pattern-highlight { color: var(--warning-red); font-weight: 600; }
+        .pattern-safe { color: var(--safe-teal); font-weight: 600; }
+
         @media (max-width: 768px) {
-            body {
-                padding: 1rem;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .activity-item {
-                grid-template-columns: 1fr;
-            }
+            body { padding: 1rem; }
+            h1 { font-size: 2rem; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .pattern-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
+    <div class="alert-banner">
+        <div class="icon">⏱️</div>
+        <div class="text">
+            <strong>24-Hour Data Lag:</strong> This dashboard shows historical patterns. For <strong>real-time ICE incidents and reports</strong>, visit <a href="https://iceout.org/en" target="_blank">iceout.org/en</a>
+        </div>
+    </div>
+
     <div class="disclaimer">
         <h3>⚠️ Important Legal Disclaimer</h3>
         <p><strong>FOR INFORMATIONAL AND EDUCATIONAL PURPOSES ONLY.</strong> This dashboard displays community-reported data and is provided "as-is" without any warranties or guarantees of accuracy, completeness, or reliability.</p>
@@ -307,198 +301,655 @@
 
     <header>
         <h1>ICE Activity Monitor</h1>
-        <p class="subtitle">Live community-reported activity dashboard</p>
+        <p class="subtitle">Complete Historical Dataset Analysis - Minneapolis/St. Paul</p>
         <div class="live-indicator">
             <div class="pulse-dot"></div>
             <span>LIVE DATA</span>
         </div>
     </header>
 
-    <div class="stats-grid" id="statsGrid">
-        <div class="stat-card">
-            <div class="stat-label">Total Incidents</div>
-            <div class="stat-value" id="totalIncidents">—</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Last 24 Hours</div>
-            <div class="stat-value" id="last24Hours">—</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Confirmed Reports</div>
-            <div class="stat-value" id="confirmedReports">—</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Most Active City</div>
-            <div class="stat-value" id="mostActiveCity" style="font-size: 1.5rem;">—</div>
-        </div>
+    <button class="refresh-btn" onclick="loadAllData()" id="refreshBtn">↻ Refresh Data</button>
+
+    <div id="loadingArea" class="loading">
+        <div>Loading complete dataset with pagination...</div>
+        <div class="loading-progress" id="loadingProgress"></div>
     </div>
 
-    <div class="activity-table">
-        <div class="table-header">
-            <div class="table-title">Recent Activity</div>
-            <button class="refresh-btn" onclick="loadData()">Refresh Data</button>
+    <div id="dashboardContent" style="display: none;">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Incidents Analyzed</div>
+                <div class="stat-value" id="totalIncidents">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Most Recent Incident</div>
+                <div class="stat-value" id="mostRecent" style="font-size: 1.3rem;">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Most Active City</div>
+                <div class="stat-value" id="mostActiveCity" style="font-size: 1.6rem;">—</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Peak Activity Hour</div>
+                <div class="stat-value" id="peakHour" style="font-size: 1.8rem;">—</div>
+            </div>
         </div>
-        <div id="activityList" class="activity-list">
-            <div class="loading">Loading data from Airtable...</div>
+
+        <div class="insight-section">
+            <h2 class="section-title">📅 ICE Activity by Day of Week</h2>
+            <p class="section-subtitle">Total incidents across entire dataset</p>
+            <canvas id="dayChart"></canvas>
+        </div>
+
+        <div class="insight-section">
+            <h2 class="section-title">🕐 ICE Activity by Hour of Day (24-hour clock)</h2>
+            <p class="section-subtitle">Total incidents per hour across complete dataset</p>
+            <canvas id="hourChart"></canvas>
+        </div>
+
+        <div class="insight-section">
+            <h2 class="section-title">📊 Activity Over Time (Last 60 Days)</h2>
+            <p class="section-subtitle">Daily incident trend</p>
+            <canvas id="timelineChart"></canvas>
+        </div>
+
+        <div class="insight-section">
+            <h2 class="section-title">📍 High-Risk Locations</h2>
+            <p class="section-subtitle">Areas with highest activity</p>
+            <div id="hotLocations" class="pattern-grid"></div>
+        </div>
+
+        <div class="insight-section">
+            <h2 class="section-title">🔍 Key Patterns for Community Safety</h2>
+            <div id="patternInsights" class="pattern-grid"></div>
+        </div>
+
+        <!-- Self-Care & Support -->
+        <div class="insight-section" style="border: 2px solid var(--safe-teal); background: rgba(38, 166, 154, 0.05);">
+            <h2 class="section-title">💚 You Are Not Alone</h2>
+            <p style="font-size: 1rem; line-height: 1.8; margin-bottom: 1.5rem; color: var(--text-primary);">
+                It's completely normal to feel overwhelmed, scared, or anxious about ICE activity. This is a horrifying situation, and your feelings are valid. Please remember: <strong style="color: var(--safe-teal);">you are part of a strong community, and we protect each other.</strong>
+            </p>
+            <div style="background: rgba(255, 255, 255, 0.03); padding: 1.5rem; border-radius: 8px; border-left: 4px solid var(--safe-teal); margin-bottom: 1.5rem;">
+                <div style="font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.75rem; color: var(--text-primary);">If You're Struggling:</div>
+                <div style="line-height: 1.8; color: var(--text-secondary);">
+                    <strong style="color: var(--text-primary);">Crisis Text Line:</strong> Text HOME to <span style="color: var(--safe-teal); font-weight: 600;">741741</span><br>
+                    <strong style="color: var(--text-primary);">SAMHSA National Helpline:</strong> <span style="color: var(--safe-teal); font-weight: 600;">1-800-662-4357</span> (free, confidential, 24/7)<br>
+                    <br>
+                    <em>Take breaks from the news. Rest when you need to. Ask friends for support. Your mental health matters.</em>
+                </div>
+            </div>
+        </div>
+
+        <!-- Know Your Rights -->
+        <div class="insight-section" style="border: 2px solid var(--accent-primary); background: rgba(91, 155, 213, 0.05);">
+            <h2 class="section-title">📋 Know Your Rights: Quick Guide</h2>
+            <p class="section-subtitle">Legal protections you have during an ICE encounter - memorize these</p>
+            <div style="display: grid; gap: 1rem; margin-top: 1rem;">
+                <div style="background: rgba(255, 255, 255, 0.03); padding: 1.25rem; border-radius: 8px; border-left: 4px solid var(--accent-primary);">
+                    <div style="font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text-primary);">🚪 At Your Door</div>
+                    <div style="line-height: 1.7; color: var(--text-secondary);">
+                        <strong style="color: var(--text-primary);">DO NOT open the door.</strong> Ask them to slip any warrant under the door or through a window. A warrant must be signed by a judge and list your exact name and address. An "administrative warrant" or "deportation warrant" is NOT enough to enter your home.
+                    </div>
+                </div>
+                <div style="background: rgba(255, 255, 255, 0.03); padding: 1.25rem; border-radius: 8px; border-left: 4px solid var(--accent-primary);">
+                    <div style="font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text-primary);">🤐 Right to Remain Silent</div>
+                    <div style="line-height: 1.7; color: var(--text-secondary);">
+                        Say clearly: <strong style="color: var(--safe-teal);">"I am exercising my right to remain silent. I do not consent to any searches."</strong> Then STOP TALKING. You do not have to answer questions about your citizenship, where you were born, or how you entered the country.
+                    </div>
+                </div>
+                <div style="background: rgba(255, 255, 255, 0.03); padding: 1.25rem; border-radius: 8px; border-left: 4px solid var(--accent-primary);">
+                    <div style="font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text-primary);">⚖️ Right to a Lawyer</div>
+                    <div style="line-height: 1.7; color: var(--text-secondary);">
+                        Say: <strong style="color: var(--safe-teal);">"I want to speak to a lawyer."</strong> Do NOT sign anything without talking to a lawyer first. You have the right to a phone call. Carry a "know your rights" card with a lawyer's number.
+                    </div>
+                </div>
+                <div style="background: rgba(255, 255, 255, 0.03); padding: 1.25rem; border-radius: 8px; border-left: 4px solid var(--accent-primary);">
+                    <div style="font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text-primary);">🚫 What NOT to Do</div>
+                    <div style="line-height: 1.7; color: var(--text-secondary);">
+                        • Don't lie (but you can stay silent)<br>
+                        • Don't show fake documents<br>
+                        • Don't run away<br>
+                        • Don't physically resist arrest<br>
+                        • Don't sign anything you don't understand
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resistance Tactics -->
+        <div class="insight-section" style="border: 2px solid var(--warning-amber);">
+            <h2 class="section-title">✊ Community Defense Ideas</h2>
+            <p class="section-subtitle" style="color: var(--warning-amber); font-weight: 600;">⚠️ FOR INFORMATIONAL AND ENTERTAINMENT PURPOSES ONLY - Not legal advice. Understand risks before taking action.</p>
+            <p style="font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.5rem; color: var(--text-secondary);">
+                These are historical tactics communities have used. <strong>Any action carries legal risk.</strong> Make your own informed decisions about what level of involvement feels right for you.
+            </p>
+            <div class="pattern-grid">
+                <div class="pattern-card" style="border-left: 3px solid var(--warning-amber);">
+                    <div class="pattern-icon">📢</div>
+                    <div class="pattern-title">Make Noise</div>
+                    <div class="pattern-description">
+                        <strong>Blow whistles, honk horns, bang pots.</strong> Loud noise alerts neighbors and attracts public attention. ICE often retreats when operations become highly visible. <em>Legal risk: Low</em>
+                    </div>
+                </div>
+
+                <div class="pattern-card" style="border-left: 3px solid var(--solar-ember);">
+                    <div class="pattern-icon">📱</div>
+                    <div class="pattern-title">Document & Witness</div>
+                    <div class="pattern-description">
+                        <strong>Record from a safe distance.</strong> Film badge numbers, vehicle plates, timing. Stay on public property. Share with legal observers. <em>Legal risk: Low if you maintain safe distance</em>
+                    </div>
+                </div>
+
+                <div class="pattern-card" style="border-left: 3px solid var(--solar-ember);">
+                    <div class="pattern-icon">👥</div>
+                    <div class="pattern-title">Community Presence</div>
+                    <div class="pattern-description">
+                        <strong>Gather peacefully in public spaces.</strong> Large groups of witnesses often deter operations. Stand on sidewalks, observe from distance. <em>Legal risk: Low if nonviolent and on public property</em>
+                    </div>
+                </div>
+
+                <div class="pattern-card" style="border-left: 3px solid var(--solar-ember);">
+                    <div class="pattern-icon">🔔</div>
+                    <div class="pattern-title">Rapid Alerts</div>
+                    <div class="pattern-description">
+                        <strong>Text chains, Signal groups, phone trees.</strong> Immediate information sharing: location, vehicle description, agent count. Fast community response. <em>Legal risk: None</em>
+                    </div>
+                </div>
+
+                <div class="pattern-card" style="border-left: 3px solid var(--solar-ember);">
+                    <div class="pattern-icon">⏱️</div>
+                    <div class="pattern-title">Ask Questions</div>
+                    <div class="pattern-description">
+                        <strong>Request identification, ask for supervisor, ask about warrants.</strong> You have the right to understand what's happening. Document responses. <em>Legal risk: None - this is your right</em>
+                    </div>
+                </div>
+
+                <div class="pattern-card" style="border-left: 3px solid var(--solar-ember);">
+                    <div class="pattern-icon">🛡️</div>
+                    <div class="pattern-title">Know & Share Rights</div>
+                    <div class="pattern-description">
+                        <strong>Carry "know your rights" cards. Share them.</strong> Inform others they can refuse to answer questions, don't have to open doors, can request lawyers. <em>Legal risk: None</em>
+                    </div>
+                </div>
+
+                <div class="pattern-card" style="border-left: 3px solid var(--solar-ember);">
+                    <div class="pattern-icon">🚶</div>
+                    <div class="pattern-title">Legal Observation</div>
+                    <div class="pattern-description">
+                        <strong>Stand as legal observers.</strong> Wear identification, take notes, document procedures. Legal observer networks provide accountability. <em>Legal risk: Low</em>
+                    </div>
+                </div>
+
+                <div class="pattern-card" style="border-left: 3px solid var(--solar-ember);">
+                    <div class="pattern-icon">🤝</div>
+                    <div class="pattern-title">Accompany & Support</div>
+                    <div class="pattern-description">
+                        <strong>Walk with vulnerable community members.</strong> Accompany people to appointments, transit, work. Physical presence of allies can deter targeting. <em>Legal risk: None</em>
+                    </div>
+                </div>
+
+                <div class="pattern-card" style="border-left: 3px solid var(--warning-amber); grid-column: 1 / -1;">
+                    <div class="pattern-icon">⚡</div>
+                    <div class="pattern-title">Important: Understand Your Risks</div>
+                    <div class="pattern-description">
+                        Some communities have <strong style="color: var(--safe-teal);">successfully used these tactics</strong> to prevent deportations. However, <strong style="color: var(--warning-red);">any direct action carries potential legal consequences.</strong> Do not physically obstruct federal agents, do not lie to law enforcement, do not provide false information. Research your local laws, consult with lawyers, and make informed decisions about your own level of involvement.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Community Resources -->
+        <div class="insight-section" style="border: 2px solid var(--accent-primary);">
+            <h2 class="section-title">🤝 Community Resources & Support</h2>
+            <p class="section-subtitle">Know your rights and support mutual aid efforts</p>
+            <div style="display: grid; gap: 1.5rem; margin-top: 1.5rem;">
+                <a href="https://immigrantjustice.org/for-immigrants/know-your-rights/ice-encounter/" target="_blank" style="display: flex; align-items: center; gap: 1rem; background: rgba(255, 255, 255, 0.03); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color); text-decoration: none; color: var(--text-primary); transition: all 0.2s;">
+                    <div style="font-size: 2rem;">📚</div>
+                    <div style="flex: 1;">
+                        <div style="font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1.2rem; margin-bottom: 0.25rem;">Know Your Rights</div>
+                        <div style="font-family: 'Poppins', sans-serif; font-size: 0.9rem; color: var(--text-secondary);">Essential legal information if you encounter ICE</div>
+                    </div>
+                    <div style="color: var(--accent-primary); font-size: 1.5rem;">→</div>
+                </a>
+                <a href="https://docs.proton.me/doc?mode=open-url&token=3BQTG29B88#46R7ocgiFwew" target="_blank" style="display: flex; align-items: center; gap: 1rem; background: rgba(255, 255, 255, 0.03); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color); text-decoration: none; color: var(--text-primary); transition: all 0.2s;">
+                    <div style="font-size: 2rem;">📋</div>
+                    <div style="flex: 1;">
+                        <div style="font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1.2rem; margin-bottom: 0.25rem;">Local Resources</div>
+                        <div style="font-family: 'Poppins', sans-serif; font-size: 0.9rem; color: var(--text-secondary);">Community safety guides and local support</div>
+                    </div>
+                    <div style="color: var(--accent-primary); font-size: 1.5rem;">→</div>
+                </a>
+                <a href="https://linktr.ee/mplsmutualaid" target="_blank" style="display: flex; align-items: center; gap: 1rem; background: rgba(91, 155, 213, 0.1); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--accent-primary); text-decoration: none; color: var(--text-primary); transition: all 0.2s;">
+                    <div style="font-size: 2rem;">❤️</div>
+                    <div style="flex: 1;">
+                        <div style="font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1.2rem; margin-bottom: 0.25rem;">Support Mutual Aid</div>
+                        <div style="font-family: 'Poppins', sans-serif; font-size: 0.9rem; color: var(--text-secondary);">Donate to support community protection and rapid response</div>
+                    </div>
+                    <div style="color: var(--accent-primary); font-size: 1.5rem;">→</div>
+                </a>
+            </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURATION - You'll need to set up Airtable API access
-        const AIRTABLE_CONFIG = {
-            // To get this working, you need to:
-            // 1. Go to https://airtable.com/create/tokens
-            // 2. Create a personal access token with read access to your base
-            // 3. Replace YOUR_API_KEY below
+        const CONFIG = {
             apiKey: 'pat4Wu1xZwnJjLXpU.95d481c0aa858c4c730cbd8b4933dd0d8c7045f636b7180310e06f29bee6162e',
             baseId: 'app8mH6QAlAxuuygZ',
-            tableId: 'tblsqeROfxhPiGWfH'// Replace with your actual table name
+            tableId: 'tblsqeROfxhPiGWfH'
         };
 
-        async function loadData() {
-            const activityList = document.getElementById('activityList');
-            activityList.innerHTML = '<div class="loading">Loading data from Airtable...</div>';
+        let dayChart, hourChart, timelineChart;
+
+        async function loadAllData() {
+            const loadingArea = document.getElementById('loadingArea');
+            const dashboardContent = document.getElementById('dashboardContent');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const loadingProgress = document.getElementById('loadingProgress');
+            
+            refreshBtn.disabled = true;
+            refreshBtn.textContent = '⏳ Loading Complete Dataset...';
+            loadingArea.style.display = 'block';
+            dashboardContent.style.display = 'none';
 
             try {
-                // For demo purposes, using sample data structure
-                // Replace this with actual Airtable API call when you have your API key
-                
-                if (AIRTABLE_CONFIG.apiKey === 'YOUR_API_KEY_HERE') {
-                    activityList.innerHTML = `
-                        <div class="error">
-                            <h3>⚠️ API Key Required</h3>
-                            <p>To connect to your Airtable:</p>
-                            <ol style="text-align: left; max-width: 500px; margin: 1rem auto; line-height: 1.8;">
-                                <li>Go to <a href="https://airtable.com/create/tokens" target="_blank" style="color: var(--alert-orange);">airtable.com/create/tokens</a></li>
-                                <li>Create a personal access token</li>
-                                <li>Give it read access to your base</li>
-                                <li>Replace 'YOUR_API_KEY_HERE' in the code with your token</li>
-                                <li>Also update the tableName in AIRTABLE_CONFIG if needed</li>
-                            </ol>
-                        </div>
-                    `;
-                    return;
-                }
+                let allRecords = [];
+                let offset = null;
+                let pageCount = 0;
 
-                const response = await fetch(
-                    `https://api.airtable.com/v0/${AIRTABLE_CONFIG.baseId}/${encodeURIComponent(AIRTABLE_CONFIG.tableName)}?sort[0][field]=activity_date&sort[0][direction]=desc&maxRecords=50`,
-                    {
+                do {
+                    pageCount++;
+                    const url = `https://api.airtable.com/v0/${CONFIG.baseId}/${CONFIG.tableId}${offset ? `?offset=${offset}` : ''}`;
+                    
+                    loadingProgress.textContent = `Loading page ${pageCount}... (${allRecords.length} records so far)`;
+                    
+                    console.log(`Fetching page ${pageCount}:`, url);
+
+                    const response = await fetch(url, {
+                        method: 'GET',
                         headers: {
-                            'Authorization': `Bearer ${AIRTABLE_CONFIG.apiKey}`
+                            'Authorization': `Bearer ${CONFIG.apiKey}`,
+                            'Content-Type': 'application/json'
                         }
-                    }
-                );
+                    });
 
-                if (!response.ok) {
-                    throw new Error(`API Error: ${response.status}`);
+                    if (!response.ok) {
+                        throw new Error(`API Error: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    allRecords = allRecords.concat(data.records);
+                    offset = data.offset;
+                    
+                    console.log(`Page ${pageCount}: Got ${data.records.length} records. Offset: ${offset || 'none (last page)'}`);
+                    
+                } while (offset);
+
+                console.log('✓ COMPLETE! Loaded', allRecords.length, 'total records');
+                
+                if (allRecords.length === 0) {
+                    throw new Error('No records found');
                 }
 
-                const data = await response.json();
-                displayData(data.records);
+                loadingArea.style.display = 'none';
+                dashboardContent.style.display = 'block';
+                
+                analyzeCompleteDataset(allRecords);
                 
             } catch (error) {
-                console.error('Error loading data:', error);
-                activityList.innerHTML = `
+                console.error('Error:', error);
+                loadingArea.innerHTML = `
                     <div class="error">
                         <h3>Error Loading Data</h3>
                         <p>${error.message}</p>
-                        <p style="margin-top: 1rem; font-size: 0.85rem;">Check console for details</p>
+                        <p style="margin-top: 1rem;">Check browser console (F12) for details</p>
                     </div>
                 `;
+            } finally {
+                refreshBtn.disabled = false;
+                refreshBtn.textContent = '↻ Refresh Data';
             }
         }
 
-        function displayData(records) {
-            const activityList = document.getElementById('activityList');
+        function analyzeCompleteDataset(records) {
+            console.log('=== ANALYZING COMPLETE DATASET ===');
+            console.log('Total records:', records.length);
             
-            if (records.length === 0) {
-                activityList.innerHTML = '<div class="loading">No data available</div>';
-                return;
-            }
-
-            // Calculate stats
             updateStats(records);
-
-            // Display activity items
-            activityList.innerHTML = records.map(record => {
-                const fields = record.fields;
-                const activityType = fields.simplified_activity || 'Unknown';
-                const badgeClass = getBadgeClass(activityType);
-                const verificationClass = getVerificationClass(fields.veracity);
-                
-                return `
-                    <div class="activity-item">
-                        <div class="activity-badge ${badgeClass}">
-                            ${activityType}
-                        </div>
-                        <div class="activity-details">
-                            <h4>${fields.city || 'Unknown Location'}, ${fields.county || ''}</h4>
-                            <div class="activity-meta">
-                                ${formatDate(fields.activity_date)} • ${fields.hour_of_day_str || 'Time unknown'}
-                                ${fields.location_name ? ` • ${fields.location_name}` : ''}
-                            </div>
-                            ${fields.additional_description ? `<div class="activity-description">${fields.additional_description}</div>` : ''}
-                        </div>
-                        <div class="verification-badge ${verificationClass}">
-                            ${fields.veracity || 'Unverified'}
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            createDayChart(records);
+            createHourChart(records);
+            createTimelineChart(records);
+            createHotLocations(records);
+            createPatternInsights(records);
+            
+            console.log('✓ Analysis complete');
         }
 
         function updateStats(records) {
-            document.getElementById('totalIncidents').textContent = records.length;
+            document.getElementById('totalIncidents').textContent = records.length.toLocaleString();
 
-            // Last 24 hours
-            const oneDayAgo = new Date();
-            oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-            const recent = records.filter(r => new Date(r.fields.activity_date) > oneDayAgo);
-            document.getElementById('last24Hours').textContent = recent.length;
+            const dates = records.map(r => new Date(r.fields.activity_date)).filter(d => !isNaN(d));
+            if (dates.length > 0) {
+                const maxDate = new Date(Math.max(...dates));
+                const daysSince = Math.floor((new Date() - maxDate) / (1000 * 60 * 60 * 24));
+                const freshness = daysSince === 0 ? 'Today' : daysSince === 1 ? 'Yesterday' : `${daysSince} days ago`;
+                document.getElementById('mostRecent').textContent = maxDate.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
+                document.getElementById('mostRecent').title = `${freshness} - Data is ${daysSince} days old`;
+            }
 
-            // Confirmed reports
-            const confirmed = records.filter(r => 
-                r.fields.veracity === 'Confirmed' || r.fields.veracity === 'Verified'
-            );
-            document.getElementById('confirmedReports').textContent = confirmed.length;
-
-            // Most active city
             const cityCounts = {};
             records.forEach(r => {
-                const city = r.fields.city;
-                if (city) cityCounts[city] = (cityCounts[city] || 0) + 1;
+                if (r.fields.city) cityCounts[r.fields.city] = (cityCounts[r.fields.city] || 0) + 1;
             });
-            const mostActive = Object.entries(cityCounts).sort((a, b) => b[1] - a[1])[0];
-            document.getElementById('mostActiveCity').textContent = mostActive ? mostActive[0] : '—';
+            const sortedCities = Object.entries(cityCounts).sort((a, b) => b[1] - a[1]);
+            if (sortedCities.length > 0) {
+                document.getElementById('mostActiveCity').textContent = sortedCities[0][0];
+            }
+
+            const hourCounts = {};
+            records.forEach(r => {
+                const hour = r.fields.hour_of_day;
+                if (hour !== undefined && hour !== null) {
+                    hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+                }
+            });
+
+            const sortedHours = Object.entries(hourCounts).sort((a, b) => b[1] - a[1]);
+            if (sortedHours.length > 0) {
+                document.getElementById('peakHour').textContent = formatHour(parseInt(sortedHours[0][0]));
+            }
         }
 
-        function getBadgeClass(activityType) {
-            if (activityType.includes('Abduction')) return 'badge-abduction';
-            if (activityType.includes('Threat')) return 'badge-threat';
-            return 'badge-observed';
+        function formatHour(hour) {
+            if (hour === 0) return '12 AM';
+            if (hour < 12) return `${hour} AM`;
+            if (hour === 12) return '12 PM';
+            return `${hour - 12} PM`;
         }
 
-        function getVerificationClass(veracity) {
-            if (veracity === 'Confirmed' || veracity === 'Verified') return 'verified';
-            if (veracity === 'Likely' || veracity === 'Very Likely') return 'likely';
-            return '';
-        }
+        function createDayChart(records) {
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            const dayCounts = {};
+            
+            days.forEach(day => dayCounts[day] = 0);
+            
+            // Count incidents by day of week
+            records.forEach(r => {
+                const dateStr = r.fields.activity_date;
+                if (dateStr) {
+                    // Parse date string as UTC to avoid timezone shifting
+                    // Assuming format is YYYY-MM-DD
+                    const parts = dateStr.split('-');
+                    if (parts.length === 3) {
+                        const year = parseInt(parts[0]);
+                        const month = parseInt(parts[1]) - 1; // JS months are 0-indexed
+                        const day = parseInt(parts[2]);
+                        const date = new Date(year, month, day);
+                        
+                        if (!isNaN(date.getTime())) {
+                            const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+                            if (dayCounts[dayName] !== undefined) {
+                                dayCounts[dayName]++;
+                            }
+                        }
+                    }
+                }
+            });
 
-        function formatDate(dateStr) {
-            if (!dateStr) return 'Date unknown';
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-US', { 
-                month: 'short', 
-                day: 'numeric',
-                year: 'numeric'
+            const counts = days.map(d => dayCounts[d]);
+            const maxCount = Math.max(...counts);
+
+            console.log('Day of week counts:', dayCounts);
+            console.log('Sample dates processed:', records.slice(0, 5).map(r => ({
+                date: r.fields.activity_date,
+                parsed_day: (() => {
+                    const dateStr = r.fields.activity_date;
+                    if (dateStr) {
+                        const parts = dateStr.split('-');
+                        if (parts.length === 3) {
+                            const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                            return date.toLocaleDateString('en-US', { weekday: 'long' });
+                        }
+                    }
+                    return 'invalid';
+                })()
+            })));
+
+            const ctx = document.getElementById('dayChart');
+            if (dayChart) dayChart.destroy();
+            
+            dayChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        label: 'Incidents',
+                        data: counts,
+                        backgroundColor: counts.map(c => c === maxCount ? 'rgba(255, 107, 107, 0.9)' : 'rgba(91, 155, 213, 0.7)'),
+                        borderColor: 'rgba(91, 155, 213, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                            callbacks: {
+                                label: (ctx) => `${ctx.parsed.y} incidents`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#B4B6BA' },
+                            grid: { color: 'rgba(180, 182, 186, 0.1)' },
+                            title: { display: true, text: 'Number of Incidents', color: '#B4B6BA' }
+                        },
+                        x: {
+                            ticks: { color: '#B4B6BA' },
+                            grid: { display: false },
+                            title: { display: true, text: 'Day', color: '#B4B6BA' }
+                        }
+                    }
+                }
             });
         }
 
-        // Auto-refresh every 5 minutes
-        setInterval(loadData, 5 * 60 * 1000);
+        function createHourChart(records) {
+            const hourCounts = Array(24).fill(0);
+            
+            records.forEach(r => {
+                const hour = r.fields.hour_of_day;
+                if (hour !== undefined && hour !== null && hour >= 0 && hour < 24) {
+                    hourCounts[hour]++;
+                }
+            });
 
-        // Load data on page load
-        loadData();
+            const maxCount = Math.max(...hourCounts);
+
+            console.log('Hour counts:', hourCounts);
+            console.log('Peak hour count:', maxCount);
+
+            const ctx = document.getElementById('hourChart');
+            if (hourChart) hourChart.destroy();
+            
+            hourChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Array.from({length: 24}, (_, i) => i),
+                    datasets: [{
+                        label: 'Incidents',
+                        data: hourCounts,
+                        backgroundColor: hourCounts.map(count => {
+                            if (count === 0) return 'rgba(38, 166, 154, 0.8)';
+                            if (count === maxCount) return 'rgba(255, 107, 107, 0.9)';
+                            return 'rgba(91, 155, 213, 0.7)';
+                        }),
+                        borderColor: 'rgba(91, 155, 213, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                            callbacks: {
+                                title: (items) => `${items[0].label}:00 (${formatHour(parseInt(items[0].label))})`,
+                                label: (ctx) => `${ctx.parsed.y} incidents`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#B4B6BA' },
+                            grid: { color: 'rgba(180, 182, 186, 0.1)' },
+                            title: { display: true, text: 'Number of Incidents', color: '#B4B6BA' }
+                        },
+                        x: {
+                            ticks: { color: '#B4B6BA' },
+                            grid: { display: false },
+                            title: { display: true, text: 'Hour (0 = midnight, 12 = noon)', color: '#B4B6BA' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createTimelineChart(records) {
+            const sixtyDaysAgo = new Date();
+            sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+            
+            const recentRecords = records.filter(r => {
+                const date = new Date(r.fields.activity_date);
+                return !isNaN(date) && date >= sixtyDaysAgo;
+            });
+
+            const dateCounts = {};
+            recentRecords.forEach(r => {
+                const dateStr = r.fields.activity_date;
+                if (dateStr) dateCounts[dateStr] = (dateCounts[dateStr] || 0) + 1;
+            });
+
+            const sortedDates = Object.keys(dateCounts).sort();
+            const counts = sortedDates.map(d => dateCounts[d]);
+
+            const ctx = document.getElementById('timelineChart');
+            if (timelineChart) timelineChart.destroy();
+            
+            timelineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sortedDates.map(d => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+                    datasets: [{
+                        label: 'Daily Incidents',
+                        data: counts,
+                        borderColor: 'rgba(91, 155, 213, 1)',
+                        backgroundColor: 'rgba(91, 155, 213, 0.2)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: '#B4B6BA' }, grid: { color: 'rgba(180, 182, 186, 0.1)' } },
+                        x: { ticks: { color: '#B4B6BA', maxRotation: 45 }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function createHotLocations(records) {
+            const cityCounts = {};
+            records.forEach(r => {
+                if (r.fields.city) cityCounts[r.fields.city] = (cityCounts[r.fields.city] || 0) + 1;
+            });
+            
+            const topCities = Object.entries(cityCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            
+            document.getElementById('hotLocations').innerHTML = topCities.map(([city, count]) => `
+                <div class="pattern-card" style="border-left: 3px solid var(--accent-primary);">
+                    <div class="pattern-icon">🏙️</div>
+                    <div class="pattern-title">${city}</div>
+                    <div class="pattern-description">
+                        <span class="pattern-highlight">${count} incidents</span> (${((count/records.length)*100).toFixed(1)}% of all activity)
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function createPatternInsights(records) {
+            const hourCounts = {};
+            records.forEach(r => {
+                const hour = r.fields.hour_of_day;
+                if (hour !== undefined) hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+            });
+
+            const sortedHours = Object.entries(hourCounts).sort((a, b) => b[1] - a[1]);
+            const peakHour = sortedHours[0];
+            
+            const allHours = Array.from({length: 24}, (_, i) => i);
+            const hoursWithZero = allHours.filter(h => !hourCounts[h]);
+
+            const abductions = records.filter(r => 
+                r.fields.simplified_activity && r.fields.simplified_activity.toLowerCase().includes('abduction')
+            );
+
+            let safeHoursText = '';
+            if (hoursWithZero.length > 0) {
+                const hoursFormatted = hoursWithZero.map(h => formatHour(h));
+                if (hoursWithZero.length === 1) {
+                    safeHoursText = `<span class="pattern-safe">${hoursFormatted[0]} has ZERO incidents</span> - the statistically safest hour`;
+                } else {
+                    safeHoursText = `<span class="pattern-safe">${hoursWithZero.length} hours with ZERO incidents:</span> ${hoursFormatted.join(', ')} - the statistically safest times`;
+                }
+            } else {
+                const safestHours = sortedHours.slice(-3);
+                safeHoursText = `Lowest activity: ${safestHours.map(h => formatHour(parseInt(h[0]))).join(', ')}`;
+            }
+
+            const patterns = [
+                {
+                    icon: '⚠️',
+                    title: 'Peak Activity Hour',
+                    description: `Most active at <span class="pattern-highlight">${formatHour(parseInt(peakHour[0]))}</span> with ${peakHour[1]} incidents across entire dataset`
+                },
+                {
+                    icon: '✅',
+                    title: hoursWithZero.length > 0 ? 'Zero-Activity Hours' : 'Safest Hours',
+                    description: safeHoursText
+                },
+                {
+                    icon: '🚨',
+                    title: 'Abduction Rate',
+                    description: `${abductions.length} abductions (<span class="pattern-highlight">${(abductions.length/records.length*100).toFixed(1)}%</span>) across all data`
+                },
+                {
+                    icon: '👥',
+                    title: 'Community Defense Works',
+                    description: `<span class="pattern-safe">Rapid response networks prevent detentions.</span> <a href="https://crimethinc.com/2025/12/03/when-the-feds-come-to-your-city-standing-up-to-ice-a-guide-from-chicago-organizers" target="_blank" style="color: var(--accent-primary); text-decoration: underline;">Read the guide from Chicago organizers →</a>`
+                }
+            ];
+
+            document.getElementById('patternInsights').innerHTML = patterns.map(p => `
+                <div class="pattern-card">
+                    <div class="pattern-icon">${p.icon}</div>
+                    <div class="pattern-title">${p.title}</div>
+                    <div class="pattern-description">${p.description}</div>
+                </div>
+            `).join('');
+        }
+
+        window.addEventListener('load', loadAllData);
     </script>
 </body>
 </html>
