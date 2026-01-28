@@ -536,7 +536,8 @@
         const CONFIG = {
             apiKey: 'pat4Wu1xZwnJjLXpU.95d481c0aa858c4c730cbd8b4933dd0d8c7045f636b7180310e06f29bee6162e',
             baseId: 'appAmfaJz2c5aR2zA',
-            tableId: 'tblsqeROfxhPiGWfH'
+            tableId: 'tblsqeROfxhPiGWfH',
+            viewId: 'viwPys1SU6W9SGScI'
         };
 
         let dayChart, hourChart, timelineChart;
@@ -559,7 +560,7 @@
 
                 do {
                     pageCount++;
-                    const url = `https://api.airtable.com/v0/${CONFIG.baseId}/${CONFIG.tableId}${offset ? `?offset=${offset}` : ''}`;
+                    const url = `https://api.airtable.com/v0/${CONFIG.baseId}/${CONFIG.tableId}?view=${CONFIG.viewId}${offset ? `&offset=${offset}` : ''}`;
                     
                     loadingProgress.textContent = `Loading page ${pageCount}... (${allRecords.length} records so far)`;
                     
