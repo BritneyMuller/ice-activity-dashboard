@@ -824,30 +824,58 @@
         }
 
         function createTimelineChart(records) {
-            const sixtyDaysAgo = new Date();
+            // Calculate 60 days ago using local date (midnight)
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const sixtyDaysAgo = new Date(today);
             sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
-            
-            const recentRecords = records.filter(r => {
-                const date = new Date(r.fields.activity_date);
-                return !isNaN(date) && date >= sixtyDaysAgo;
-            });
 
             const dateCounts = {};
-            recentRecords.forEach(r => {
+            let recordsInRange = 0;
+
+            // Count ALL records by their activity_date, regardless of status
+            records.forEach(r => {
                 const dateStr = r.fields.activity_date;
-                if (dateStr) dateCounts[dateStr] = (dateCounts[dateStr] || 0) + 1;
+                if (dateStr) {
+                    // Parse date string properly to avoid timezone shifting
+                    // Assuming format is YYYY-MM-DD
+                    const parts = dateStr.split('-');
+                    if (parts.length === 3) {
+                        const year = parseInt(parts[0]);
+                        const month = parseInt(parts[1]) - 1; // JS months are 0-indexed
+                        const day = parseInt(parts[2]);
+                        const date = new Date(year, month, day);
+
+                        if (!isNaN(date.getTime()) && date >= sixtyDaysAgo && date <= today) {
+                            // Use the original dateStr as key to preserve consistency
+                            dateCounts[dateStr] = (dateCounts[dateStr] || 0) + 1;
+                            recordsInRange++;
+                        }
+                    }
+                }
             });
+
+            console.log(`Timeline chart: ${recordsInRange} records in last 60 days out of ${records.length} total`);
 
             const sortedDates = Object.keys(dateCounts).sort();
             const counts = sortedDates.map(d => dateCounts[d]);
 
+            // Helper to parse YYYY-MM-DD format properly
+            const parseDate = (dateStr) => {
+                const parts = dateStr.split('-');
+                if (parts.length === 3) {
+                    return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                }
+                return new Date(dateStr);
+            };
+
             const ctx = document.getElementById('timelineChart');
             if (timelineChart) timelineChart.destroy();
-            
+
             timelineChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: sortedDates.map(d => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+                    labels: sortedDates.map(d => parseDate(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
                     datasets: [{
                         label: 'Daily Incidents',
                         data: counts,
