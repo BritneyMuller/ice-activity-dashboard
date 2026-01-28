@@ -541,6 +541,36 @@
 
         let dayChart, hourChart, timelineChart;
 
+        // Helper to parse date strings in either M/D/YYYY or YYYY-MM-DD format
+        function parseActivityDate(dateStr) {
+            if (!dateStr) return null;
+
+            // Try M/D/YYYY format first (e.g., "1/27/2026") - Airtable's default format
+            if (dateStr.includes('/')) {
+                const parts = dateStr.split('/');
+                if (parts.length === 3) {
+                    const month = parseInt(parts[0]) - 1; // JS months are 0-indexed
+                    const day = parseInt(parts[1]);
+                    const year = parseInt(parts[2]);
+                    return new Date(year, month, day);
+                }
+            }
+
+            // Try YYYY-MM-DD format (e.g., "2026-01-27")
+            if (dateStr.includes('-')) {
+                const parts = dateStr.split('-');
+                if (parts.length === 3) {
+                    const year = parseInt(parts[0]);
+                    const month = parseInt(parts[1]) - 1;
+                    const day = parseInt(parts[2]);
+                    return new Date(year, month, day);
+                }
+            }
+
+            // Fallback to native parsing
+            return new Date(dateStr);
+        }
+
         async function loadAllData() {
             const loadingArea = document.getElementById('loadingArea');
             const dashboardContent = document.getElementById('dashboardContent');
@@ -628,7 +658,7 @@
         function updateStats(records) {
             document.getElementById('totalIncidents').textContent = records.length.toLocaleString();
 
-            const dates = records.map(r => new Date(r.fields.activity_date)).filter(d => !isNaN(d));
+            const dates = records.map(r => parseActivityDate(r.fields.activity_date)).filter(d => d && !isNaN(d));
             if (dates.length > 0) {
                 const maxDate = new Date(Math.max(...dates));
                 const daysSince = Math.floor((new Date() - maxDate) / (1000 * 60 * 60 * 24));
@@ -677,20 +707,12 @@
             records.forEach(r => {
                 const dateStr = r.fields.activity_date;
                 if (dateStr) {
-                    // Parse date string as UTC to avoid timezone shifting
-                    // Assuming format is YYYY-MM-DD
-                    const parts = dateStr.split('-');
-                    if (parts.length === 3) {
-                        const year = parseInt(parts[0]);
-                        const month = parseInt(parts[1]) - 1; // JS months are 0-indexed
-                        const day = parseInt(parts[2]);
-                        const date = new Date(year, month, day);
-                        
-                        if (!isNaN(date.getTime())) {
-                            const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
-                            if (dayCounts[dayName] !== undefined) {
-                                dayCounts[dayName]++;
-                            }
+                    const date = parseActivityDate(dateStr);
+
+                    if (date && !isNaN(date.getTime())) {
+                        const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+                        if (dayCounts[dayName] !== undefined) {
+                            dayCounts[dayName]++;
                         }
                     }
                 }
@@ -703,15 +725,8 @@
             console.log('Sample dates processed:', records.slice(0, 5).map(r => ({
                 date: r.fields.activity_date,
                 parsed_day: (() => {
-                    const dateStr = r.fields.activity_date;
-                    if (dateStr) {
-                        const parts = dateStr.split('-');
-                        if (parts.length === 3) {
-                            const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-                            return date.toLocaleDateString('en-US', { weekday: 'long' });
-                        }
-                    }
-                    return 'invalid';
+                    const date = parseActivityDate(r.fields.activity_date);
+                    return date ? date.toLocaleDateString('en-US', { weekday: 'long' }) : 'invalid';
                 })()
             })));
 
@@ -837,20 +852,13 @@
             records.forEach(r => {
                 const dateStr = r.fields.activity_date;
                 if (dateStr) {
-                    // Parse date string properly to avoid timezone shifting
-                    // Assuming format is YYYY-MM-DD
-                    const parts = dateStr.split('-');
-                    if (parts.length === 3) {
-                        const year = parseInt(parts[0]);
-                        const month = parseInt(parts[1]) - 1; // JS months are 0-indexed
-                        const day = parseInt(parts[2]);
-                        const date = new Date(year, month, day);
+                    const date = parseActivityDate(dateStr);
 
-                        if (!isNaN(date.getTime()) && date >= sixtyDaysAgo && date <= today) {
-                            // Use the original dateStr as key to preserve consistency
-                            dateCounts[dateStr] = (dateCounts[dateStr] || 0) + 1;
-                            recordsInRange++;
-                        }
+                    if (date && !isNaN(date.getTime()) && date >= sixtyDaysAgo && date <= today) {
+                        // Normalize date key to YYYY-MM-DD for consistent sorting
+                        const normalizedKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                        dateCounts[normalizedKey] = (dateCounts[normalizedKey] || 0) + 1;
+                        recordsInRange++;
                     }
                 }
             });
@@ -860,22 +868,13 @@
             const sortedDates = Object.keys(dateCounts).sort();
             const counts = sortedDates.map(d => dateCounts[d]);
 
-            // Helper to parse YYYY-MM-DD format properly
-            const parseDate = (dateStr) => {
-                const parts = dateStr.split('-');
-                if (parts.length === 3) {
-                    return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-                }
-                return new Date(dateStr);
-            };
-
             const ctx = document.getElementById('timelineChart');
             if (timelineChart) timelineChart.destroy();
 
             timelineChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: sortedDates.map(d => parseDate(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+                    labels: sortedDates.map(d => parseActivityDate(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
                     datasets: [{
                         label: 'Daily Incidents',
                         data: counts,
